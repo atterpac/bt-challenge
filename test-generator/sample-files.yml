@@ -1,0 +1,24 @@
+name: sample-files
+files:
+  - name: 10KB-file
+    size: 10KB
+    count: 1205
+  - name: 300KB-file
+    size: 300KB
+    count: 1102
+  - name: 600KB-file
+    size: 600KB
+    count: 2023
+
+folders:
+  - name: large-files
+    files:
+      - name: 200MB-file
+        size: 200MB
+        count: 2
+    folders:
+      - name: mid-file
+        files:
+          - name: 20MB-file
+            size: 20MB
+            count: 35
