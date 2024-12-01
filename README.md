@@ -17,6 +17,11 @@ cd test-generator && go run main.go sample-files.yml
 ```
 This will generate `test-generator/dist/sample-files` directory with sample files based on the yaml file provided.
 
+2. Run Packer
+```bash
+cd ../ && go run main.go
+```
+
 
 ## Algorithm Overview
 
