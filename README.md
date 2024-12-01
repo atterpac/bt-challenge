@@ -11,17 +11,17 @@ This project implements a file packing system that efficiently packs multiple fi
 
 ## Quick Start
 
-1. Generate test files:
+1. Run the program using the following command in the project directory:
 ```bash
-cd test-generator && go run main.go sample-files.yml
+go run main.go
 ```
-This will generate `test-generator/dist/sample-files` directory with sample files based on the yaml file provided.
+The program will generate sample files if they dont exist 
 
-2. Run Packer
-```bash
-cd ../ && go run main.go
-```
+Pack them into blocks of `block-N.beam` files in `./output`
 
+Unpack the blocks from  `./output` to `./output/unpack`
+
+Verify integrity of the unpacked files
 
 ## Algorithm Overview
 
