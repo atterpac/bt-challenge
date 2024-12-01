@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -12,13 +13,16 @@ import (
 
 const (
 	DIR         = "test-generator/dist/sample-files" // Directory to pack
-	OUTPUT_DIR  = "output"                           // Base output directory
-	UNPACK_DIR  = "output/unpack"                    // Directory for unpacked files
+	OUTPUT_DIR  = "output"                           // Where to output packed files
+	UNPACK_DIR  = "output/unpack"                    // Where to unpack files
 	BUFFER_SIZE = 32 * 1024                          // 32KB buffer size
 	BLOCK_SIZE  = 60 * 1024 * 1024                   // 60MB block size
 )
 
 func main() {
+	// Generate test files if they don't exist
+	generateTestFiles()
+
 	// Create output directories
 	for _, dir := range []string{OUTPUT_DIR, UNPACK_DIR} {
 		if err := os.MkdirAll(dir, 0755); err != nil {
@@ -98,4 +102,23 @@ func calculateTotalSize(dir string) int64 {
 // calculateSpeed calculates the processing speed in MB/s
 func calculateSpeed(totalBytes int64, duration time.Duration) float64 {
 	return float64(totalBytes) / (1024 * 1024) / duration.Seconds()
+}
+
+func generateTestFiles() {
+	// Check if test-generator/dist/sample-files exists
+	if _, err := os.Stat(DIR); os.IsNotExist(err) {
+		fmt.Printf("Error: Generated tests not found in %s\n", DIR)
+		// Generate sample files
+		fmt.Println("Generating sample files...")
+		// cd ./test-generator && go run main.go sample-files.yml
+		if err := os.Chdir("test-generator"); err != nil {
+			fmt.Printf("Error changing directory to test-generator: %v\n", err)
+			os.Exit(1)
+		}
+		err := exec.Command("go", "run", "main.go", "sample-files.yml").Run()
+		if err != nil {
+			fmt.Printf("Error generating sample files: %v\n", err)
+		}
+		os.Chdir("..")
+	}
 }
