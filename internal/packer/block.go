@@ -87,8 +87,7 @@ func (p defaultPacker) writeBlock(block *Block, outputDir string, blockNum int32
 	return nil
 }
 
-func (p *defaultPacker) unpackBlock(blockPath string, outputDir string) error {
-	fmt.Printf("Unpacking block: %s\n", blockPath)
+func (p *defaultPacker) UnpackBlock(blockPath string, outputDir string) error {
 	// Verify block integrity
 	if p.opts.VerifyIntegrity {
 		if err := p.validator.ValidateBlock(blockPath); err != nil {

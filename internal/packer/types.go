@@ -38,6 +38,9 @@ type Packer interface {
 
 	// Verify checks the integrity of the packed files
 	Verify(inputDir string) error
+
+	// UnpackBlock extracts files from a single block and writes them to the output directory
+	UnpackBlock(blockPath string, outputDir string) error
 }
 
 // FileInfo represents information about a file that is being processed
