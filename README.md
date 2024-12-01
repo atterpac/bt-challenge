@@ -92,4 +92,6 @@ This format ensures:
 4. Encryption support
 5. Streaming support for large files
 6. Deduplication of identical files
+7. Account for Block header and footer size for more accurate packing
+9. Methods to track block usage statistics (Average utilization, Average file count, etc.)
 
