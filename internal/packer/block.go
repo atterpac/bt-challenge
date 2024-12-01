@@ -137,8 +137,6 @@ func (p *defaultPacker) extractFile(r io.Reader, outputDir string, metadata *Fil
 		return fmt.Errorf("error creating directory for file: %w", err)
 	}
 
-	fmt.Printf("Creating output file at :%s\n", outputPath)
-
 	f, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY, os.FileMode(metadata.Mode))
 	if err != nil {
 		return fmt.Errorf("error creating output file: %w", err)
@@ -151,10 +149,6 @@ func (p *defaultPacker) extractFile(r io.Reader, outputDir string, metadata *Fil
 	if _, err := io.CopyN(w, r, metadata.Size); err != nil {
 		return fmt.Errorf("error writing file: %w", err)
 	}
-
-	fmt.Printf("Extracting file: %s\n", metadata.Path)
-	fmt.Printf("Expected checksum: %x\n", metadata.Checksum)
-	fmt.Printf("Actual checksum: %x\n", h.Sum(nil))
 
 	// Verify checksum
 	if !bytes.Equal(h.Sum(nil), metadata.Checksum) {

@@ -117,6 +117,7 @@ func (p defaultPacker) collectFileInfo(files []string) ([]FileInfo, error) {
 	var fileInfo []FileInfo
 
 	for _, path := range files {
+
 		info, err := os.Stat(path)
 		if err != nil {
 			return nil, fmt.Errorf("error getting file info: %w", err)
@@ -150,7 +151,7 @@ func (p defaultPacker) packFiles(files []FileInfo, outputDir string) error {
 
 	var currentSize int64
 
-	for _, file := range files {
+	for i, file := range files {
 		// If file doesnt fit in currnt block, write current block and start new one
 		if currentSize+file.Size > BlockSize {
 			if err := p.writeBlock(currentBlock, outputDir, blockNum); err != nil {
@@ -169,6 +170,12 @@ func (p defaultPacker) packFiles(files []FileInfo, outputDir string) error {
 			return err
 		}
 		currentSize += file.Size
+
+		if i == len(files)-1 {
+			if err := p.writeBlock(currentBlock, outputDir, blockNum); err != nil {
+				return fmt.Errorf("error writing block: %w", err)
+			}
+		}
 	}
 	return nil
 }
