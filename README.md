@@ -23,6 +23,11 @@ Unpack the blocks from  `./output` to `./output/unpack`
 
 Verify integrity of the unpacked files
 
+2. Optional arguments
+```bash
+go run main.go <input_dir> <output_dir> <unpack_dir>
+```
+
 ## Algorithm Overview
 
 The file packing system uses the following algorithm:

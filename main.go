@@ -11,15 +11,17 @@ import (
 	"github.com/atterpac/bt-takehome/internal/packer"
 )
 
-const (
+var (
 	DIR         = "test-generator/dist/sample-files" // Directory to pack
 	OUTPUT_DIR  = "output"                           // Where to output packed files
 	UNPACK_DIR  = "output/unpack"                    // Where to unpack files
-	BUFFER_SIZE = 32 * 1024                          // 32KB buffer size
+	BUFFER_SIZE = 32 * 1024                          // 32KB buffer size for validation and checksum
 	BLOCK_SIZE  = 60 * 1024 * 1024                   // 60MB block size
 )
 
 func main() {
+	// Check arguments for overriding directories
+	checkArgs()
 	// Generate test files if they don't exist
 	generateTestFiles()
 
@@ -35,7 +37,7 @@ func main() {
 	p := packer.NewPacker(packer.PackerOptions{
 		VerifyIntegrity: true,
 		BufferSize:      BUFFER_SIZE,
-		BlockSize:       BLOCK_SIZE,
+		BlockSize:       int64(BLOCK_SIZE),
 	})
 
 	// Calculate original size
@@ -102,6 +104,21 @@ func calculateTotalSize(dir string) int64 {
 // calculateSpeed calculates the processing speed in MB/s
 func calculateSpeed(totalBytes int64, duration time.Duration) float64 {
 	return float64(totalBytes) / (1024 * 1024) / duration.Seconds()
+}
+
+func checkArgs() {
+	if len(os.Args) > 1 {
+		println("Overriding default directories...")
+		DIR = os.Args[1]
+	}
+	if len(os.Args) > 2 {
+		println("Overriding default output directory...")
+		OUTPUT_DIR = os.Args[2]
+	}
+	if len(os.Args) > 3 {
+		println("Overriding default unpack directory...")
+		UNPACK_DIR = os.Args[3]
+	}
 }
 
 func generateTestFiles() {
