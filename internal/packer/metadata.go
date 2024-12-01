@@ -7,6 +7,25 @@ import (
 	"time"
 )
 
+type FileMetadata struct {
+	Path     string    // Original path
+	Size     int64     // File size in bytes
+	ModTime  time.Time // Last modification time
+	Checksum []byte    // SHA-256 checksum of the file
+	Offset   int64     // Offset within the block
+	BlockID  int32     // ID of the block containing the file
+	Mode     uint32    // File permissions
+}
+
+// FileInfo represents information about a file that is being processed
+type FileInfo struct {
+	Path    string
+	Size    int64
+	ModTime time.Time
+	Mode    uint32
+	IsDir   bool
+}
+
 func (p *defaultPacker) writeMetadata(w io.Writer, metadata *FileMetadata) error {
 	pathBytes := []byte(metadata.Path)
 	if err := binary.Write(w, binary.LittleEndian, int32(len(pathBytes))); err != nil {

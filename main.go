@@ -15,6 +15,7 @@ const (
 	OUTPUT_DIR  = "output"                           // Base output directory
 	UNPACK_DIR  = "output/unpack"                    // Directory for unpacked files
 	BUFFER_SIZE = 32 * 1024                          // 32KB buffer size
+	BLOCK_SIZE  = 60 * 1024 * 1024                   // 60MB block size
 )
 
 func main() {
@@ -30,6 +31,7 @@ func main() {
 	p := packer.NewPacker(packer.PackerOptions{
 		VerifyIntegrity: true,
 		BufferSize:      BUFFER_SIZE,
+		BlockSize:       BLOCK_SIZE,
 	})
 
 	// Calculate original size

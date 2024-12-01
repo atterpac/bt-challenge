@@ -1,11 +1,37 @@
 package packer
 
 import (
+	"encoding/binary"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 )
+
+// Packer defines the interface for file packing operations
+type Packer interface {
+	// Pack takes an input directory and packs all files into blocks in the output directory
+	Pack(inputDir string, outputDir string) error
+
+	// Unpack extracts files from blocks in the input and writes them to the output directory
+	Unpack(inputDir string, outputDir string) error
+
+	// UnpackBlock extracts files from a single block and writes them to the output directory
+	UnpackBlock(blockPath string, outputDir string) error
+
+	// Verify checks the integrity of the packed files
+	Verify(inputDir string) error
+}
+
+// PackerOptions configures the behavior of the packer
+type PackerOptions struct {
+	VerifyIntegrity bool  // Verify the integrity of the files after packing
+	BufferSize      int   // Size of the buffer used for reading and writing files
+	BlockSize       int64 // Size of the block in bytes
+	// Concurrent      bool // Enable concurrent processing
+	// UseCompression bool // Use compression for the block files
+
+}
 
 type defaultPacker struct {
 	opts      PackerOptions
@@ -76,7 +102,7 @@ func (p defaultPacker) Unpack(inputDir string, outputDir string) error {
 		for _, entry := range entries {
 			if !entry.IsDir() && filepath.Ext(entry.Name()) == ".beam" {
 				blockPath := filepath.Join(inputDir, entry.Name())
-				if err := p.unpackBlock(blockPath, outputDir); err != nil {
+				if err := p.UnpackBlock(blockPath, outputDir); err != nil {
 					return fmt.Errorf("error unpacking block %s: %w", entry.Name(), err)
 				}
 			}
@@ -84,7 +110,54 @@ func (p defaultPacker) Unpack(inputDir string, outputDir string) error {
 		return nil
 	}
 
-	return p.unpackBlock(inputDir, outputDir)
+	return p.UnpackBlock(inputDir, outputDir)
+}
+
+func (p defaultPacker) UnpackBlock(blockPath string, outputDir string) error {
+	// Verify block integrity
+	if p.opts.VerifyIntegrity {
+		if err := p.validator.ValidateBlock(blockPath); err != nil {
+			return fmt.Errorf("error verifying block integrity: %w", err)
+		}
+	}
+
+	// Open block file
+	f, err := os.Open(blockPath)
+	if err != nil {
+		return fmt.Errorf("error opening block file: %w", err)
+	}
+	defer f.Close()
+
+	// Read block ID
+	var blockID int32
+	if err := binary.Read(f, binary.LittleEndian, &blockID); err != nil {
+		return err
+	}
+
+	// Read number of files in block
+	var numFiles int32
+	if err := binary.Read(f, binary.LittleEndian, &numFiles); err != nil {
+		return fmt.Errorf("error reading number of files in block: %w", err)
+	}
+
+	// Read metadata for each file
+	files := make([]FileMetadata, numFiles)
+	for i := range files {
+		metadata, err := p.readMetadata(f)
+		if err != nil {
+			return fmt.Errorf("error reading metadata for file %d: %w", i, err)
+		}
+		files[i] = *metadata
+	}
+
+	// Extract files
+	for _, metadata := range files {
+		if err := p.extractFile(f, outputDir, &metadata); err != nil {
+			return fmt.Errorf("error extracting file %s: %w", metadata.Path, err)
+		}
+	}
+
+	return nil
 }
 
 func (p defaultPacker) Verify(inputDir string) error {
